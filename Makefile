@@ -1,26 +1,62 @@
-# Compiler settings
+# =========================
+# Build configuration
+# =========================
+
 CXX = g++
 CC = gcc
 
 CXXFLAGS = -O2 -std=c++20 -Wall -Wextra -pedantic -pthread
 CFLAGS = -O2 -Wall -Wextra -pedantic
 
-# Targets
-all: mapper gatherd
+# Output names
+MAPPER = mapper
+GATHERD = gatherd
 
-# Build mapper (C++)
-mapper: mapper.cpp
-	$(CXX) $(CXXFLAGS) -o mapper mapper.cpp -lm
+# Default target
+.PHONY: all clean run test
 
-# Build gatherd (C)
-gatherd: gatherd.c
-	$(CC) $(CFLAGS) -o gatherd gatherd.c
+all: $(MAPPER) $(GATHERD)
 
-# Clean build artifacts
+# =========================
+# Build targets
+# =========================
+
+$(MAPPER): mapper.cpp
+	$(CXX) $(CXXFLAGS) -o $(MAPPER) mapper.cpp -lm
+
+$(GATHERD): gatherd.c
+	$(CC) $(CFLAGS) -o $(GATHERD) gatherd.c
+
+# =========================
+# Test (CI-safe)
+# =========================
+
+test: all
+	@echo "Running gatherd test..."
+	./$(GATHERD) -o output.json -json
+
+	@echo "Checking output.json exists..."
+	test -f output.json
+
+	@echo "Checking output.json is not empty..."
+	test -s output.json
+
+	@echo "Basic test passed."
+
+# =========================
+# Run full system
+# =========================
+
+run: all
+	@echo "Running gatherd..."
+	./$(GATHERD) -o output.json -json
+
+	@echo "Starting mapper server on http://localhost:8090 ..."
+	./$(MAPPER) --port 8090
+
+# =========================
+# Cleanup
+# =========================
+
 clean:
-	rm -f mapper gatherd *.o a.out
-
-# Run a quick test (optional)
-run:
-	./gatherd > sample.json
-	./mapper sample.json
+	rm -f $(MAPPER) $(GATHERD) *.o output.json
