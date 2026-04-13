@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Show compiler versions
+        run: |
+          gcc --version
+          g++ --version
+          make --version
+
+      - name: Configure
+        run: make configure
+
+      - name: Build
+        run: make
+
+      - name: Test
+        run: make test
