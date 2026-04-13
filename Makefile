@@ -8,14 +8,36 @@ CC = gcc
 CXXFLAGS = -O2 -std=c++20 -Wall -Wextra -pedantic -pthread
 CFLAGS = -O2 -Wall -Wextra -pedantic
 
-# Output names
 MAPPER = mapper
 GATHERD = gatherd
 
-# Default target
-.PHONY: all clean run test
+.PHONY: all clean run test configure
 
+# Default
 all: $(MAPPER) $(GATHERD)
+
+# =========================
+# Configure (toolchain check)
+# =========================
+
+configure:
+	@echo "Checking for gcc..."
+	@command -v $(CC) >/dev/null 2>&1 || { echo "ERROR: gcc not found"; exit 1; }
+
+	@echo "Checking for g++..."
+	@command -v $(CXX) >/dev/null 2>&1 || { echo "ERROR: g++ not found"; exit 1; }
+
+	@echo "Testing gcc compilation..."
+	@echo 'int main(){return 0;}' > test.c
+	@$(CC) test.c -o test_gcc || { echo "ERROR: gcc failed"; rm -f test.c test_gcc; exit 1; }
+
+	@echo "Testing g++ compilation..."
+	@echo 'int main(){return 0;}' > test.cpp
+	@$(CXX) test.cpp -o test_gpp || { echo "ERROR: g++ failed"; rm -f test.cpp test_gpp; exit 1; }
+
+	@rm -f test.c test.cpp test_gcc test_gpp
+
+	@echo "Configure check passed."
 
 # =========================
 # Build targets
