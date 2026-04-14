@@ -1,5 +1,5 @@
 # =========================
-# Build configuration
+# Build configuration (Linux)
 # =========================
 
 CXX = g++
